@@ -9,6 +9,7 @@ import org.mockito.Mockito.`when`
 
 class SessionAnalyticsTest {
 
+    //TODO complete test
     @Test
     suspend fun testSessionAnalytics() {
         // Mock dependencies
@@ -19,15 +20,6 @@ class SessionAnalyticsTest {
         `when`(mockSessionManager.startSession()).thenReturn("Session123")
         `when`(mockEventManager.recordEvent("Event123", mapOf("key" to "value"))).thenReturn(Unit)
         `when`(mockSessionManager.endSession()).thenReturn(Unit)
-
-//        // Create a real instance of the class to test
-//        val analytics = SessionAnalytics(
-//            mockSessionManager,
-//            mockEventManager
-//        )
-//
-//        // Call the method to test
-//        analytics.testSessionAnalytics()
 
         // Verify the interactions
         verify(mockSessionManager).startSession()
