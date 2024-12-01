@@ -38,6 +38,11 @@ val ktxVersion = "1.15.0"
 val appCompatVersion = "1.7.0"
 val materialVersion = "1.12.0"
 val gsonVersion = "2.11.0"
+val junitVersion = "4.13.2"
+val junitExtVersion = "1.2.1"
+val expressoCoreVersion = "3.6.1"
+val mockitoCoreVersion = "5.5.0"
+val mockitoKotlinVersion = "4.1.0"
 
 dependencies {
 
@@ -55,12 +60,13 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
 
     //test
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+    testImplementation("junit:junit:$junitVersion")
+    androidTestImplementation("androidx.test.ext:junit:$junitExtVersion")
+    androidTestImplementation("androidx.test.espresso:espresso-core:$expressoCoreVersion")
+
     // Mockito for mocking
-    testImplementation("org.mockito:mockito-core:5.5.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+    testImplementation("org.mockito:mockito-core:$mockitoCoreVersion")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion")
 }
 
 // Allow references to generated code
