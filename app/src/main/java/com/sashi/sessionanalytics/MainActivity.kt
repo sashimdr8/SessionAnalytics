@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,7 +35,6 @@ import com.sashi.sessionanalytics.ui.components.HorizontalSpacer
 import com.sashi.sessionanalytics.ui.components.VerticalSpacer
 import com.sashi.sessionanalytics.ui.theme.SessionAnalyticsTheme
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -76,6 +76,8 @@ private fun AnalyticsView() {
     var logResults by remember {
         mutableStateOf("")
     }
+    val coroutineScope = rememberCoroutineScope()
+
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -85,13 +87,15 @@ private fun AnalyticsView() {
                 content = {
                     Text(text = stringResource(R.string.start_session))
                 }, onClick = {
-                    startSession(logResults = {
-                        logResults = if (logResults.isBlank()) {
-                            it
-                        } else {
-                            "$logResults\n$it"
-                        }
-                    },
+                    startSession(
+                        scope = coroutineScope,
+                        logResults = {
+                            logResults = if (logResults.isBlank()) {
+                                it
+                            } else {
+                                "$logResults\n$it"
+                            }
+                        },
                         sessionAlreadyExist = {
                             logResults = if (logResults.isBlank()) {
                                 DataStrings.sessionAlreadyExist
@@ -106,7 +110,9 @@ private fun AnalyticsView() {
                 content = {
                     Text(text = stringResource(R.string.stop_session))
                 }, onClick = {
-                    stopSession {
+                    stopSession(
+                        scope = coroutineScope,
+                    ) {
                         logResults = "$logResults\n$it"
                     }
                 })
@@ -117,15 +123,17 @@ private fun AnalyticsView() {
             content = {
                 Text(text = stringResource(R.string.start_session_5))
             }, onClick = {
-                startSessionFor5Seconds(logResults = {
-                    logResults = "$logResults\n$it"
-                }, sessionAlreadyExist = {
-                    logResults = if (logResults.isBlank()) {
-                        DataStrings.sessionAlreadyExist
-                    } else {
-                        "$logResults\n${DataStrings.sessionAlreadyExist}"
-                    }
-                })
+                startSessionFor5Seconds(
+                    scope = coroutineScope,
+                    logResults = {
+                        logResults = "$logResults\n$it"
+                    }, sessionAlreadyExist = {
+                        logResults = if (logResults.isBlank()) {
+                            DataStrings.sessionAlreadyExist
+                        } else {
+                            "$logResults\n${DataStrings.sessionAlreadyExist}"
+                        }
+                    })
             })
         VerticalSpacer(16)
         Text(text = stringResource(R.string.results))
@@ -141,10 +149,11 @@ private fun AnalyticsView() {
  * Note: After 5 seconds the session will be ended automatically
  * **/
 fun startSessionFor5Seconds(
+    scope: CoroutineScope,
     logResults: (String) -> Unit,
     sessionAlreadyExist: () -> Unit
 ) {
-    CoroutineScope(Dispatchers.IO).launch {
+    scope.launch {
         try {
             val sessionId = SessionAnalytics.startSession()
             logResults("${DataStrings.sessionStarted5sec}:\n${DataStrings.sessionId}: $sessionId")
@@ -154,13 +163,11 @@ fun startSessionFor5Seconds(
                 mapOf(USER_ID to "12345", LOGIN_METHOD to "Google")
             )
             logResults(DataStrings.userSignedInRecorded)
-            delay(400)
             SessionAnalytics.recordEvent(
                 SCREEN_VIEWED,
                 mapOf(PAGE_NAME to "HomeScreen", DURATION to 120)
             )
             logResults(DataStrings.screenViewedRecorded)
-            delay(400)
             SessionAnalytics.recordEvent(
                 BUTTON_CLICKED,
                 mapOf(PAGE_NAME to "Submit form", DURATION to 120)
@@ -185,27 +192,28 @@ fun startSessionFor5Seconds(
  * UserSignedIn, ScreenViewed, ButtonClicked
  * **/
 fun startSession(
+    scope: CoroutineScope,
     logResults: (String) -> Unit,
     sessionAlreadyExist: () -> Unit
 ) {
-    CoroutineScope(Dispatchers.IO).launch {
+    scope.launch {
         try {
             val sessionId = SessionAnalytics.startSession()
-            logResults("${DataStrings.sessionStarted}:\n" +
-                    "${DataStrings.sessionId}: $sessionId")
+            logResults(
+                "${DataStrings.sessionStarted}:\n" +
+                        "${DataStrings.sessionId}: $sessionId"
+            )
             // Record events
             SessionAnalytics.recordEvent(
                 USER_SIGNED_IN,
                 mapOf(USER_ID to "12345", LOGIN_METHOD to "Google")
             )
             logResults(DataStrings.userSignedInRecorded)
-            delay(400)
             SessionAnalytics.recordEvent(
                 SCREEN_VIEWED,
                 mapOf(PAGE_NAME to "HomeScreen", DURATION to 120)
             )
             logResults(DataStrings.screenViewedRecorded)
-            delay(400)
             SessionAnalytics.recordEvent(
                 BUTTON_CLICKED,
                 mapOf(PAGE_NAME to "HomeScreen", DURATION to 120)
@@ -224,9 +232,10 @@ fun startSession(
  * and shows a toast message
  * **/
 fun stopSession(
+    scope: CoroutineScope,
     onSessionEnded: (String) -> Unit
 ) {
-    CoroutineScope(Dispatchers.IO).launch {
+    scope.launch {
         SessionAnalytics.endSession()
         onSessionEnded(DataStrings.sessionEnded)
     }
